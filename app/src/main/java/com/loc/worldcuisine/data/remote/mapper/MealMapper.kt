@@ -15,7 +15,7 @@ fun MealDto.toDomain(): Meal =
     )
 
 // Detaylı mapping (ingredient/measure çiftlerini çıkarır)
-fun MealDetailDto.toDomain(): MealDetail {
+fun MealDetailDto.toDomain(): Meal {
     // ingredient / measure çiftlerini oluştur
     val ingPairs = listOf(
         strIngredient1 to strMeasure1,
