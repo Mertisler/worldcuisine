@@ -1,6 +1,7 @@
 package com.loc.worldcuisine.domain.repository
 
 import com.loc.worldcuisine.domain.model.Meal
+import com.loc.worldcuisine.domain.model.MealDetail
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -22,7 +23,7 @@ interface CuisineRepository {
      * Tek bir yemeğin detayını getirir (örneğin: mealId = "52772")
      * Kaynak: Remote API
      */
-    suspend fun getMealDetail(mealId: String): Meal
+    suspend fun getMealDetail(mealId: String): MealDetail
 
     /**
      * Bir yemeği Room veritabanına (favorilere) kaydeder.

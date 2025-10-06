@@ -6,4 +6,3 @@ data class Meal(
     val thumbnail: String,
     val instructions: String? = null
 )
-

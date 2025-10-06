@@ -11,11 +11,12 @@ fun MealDto.toDomain(): Meal =
     Meal(
         id = this.idMeal.orEmpty(),
         name = this.strMeal.orEmpty(),
-        imageUrl = this.strMealThumb.orEmpty()
+        thumbnail = this.strMealThumb.orEmpty()
     )
 
 // Detaylı mapping (ingredient/measure çiftlerini çıkarır)
-fun MealDetailDto.toDomain(): Meal {
+// Bu fonksiyon 'MealDetail' döndürmelidir.
+fun MealDetailDto.toDomain(): MealDetail {
     // ingredient / measure çiftlerini oluştur
     val ingPairs = listOf(
         strIngredient1 to strMeasure1,
@@ -41,7 +42,7 @@ fun MealDetailDto.toDomain(): Meal {
     ).mapNotNull { (ingredient, measure) ->
         val ing = ingredient?.trim()
         val meas = measure?.trim()
-        // ingredient boş değilse ekle (ölümlü boşluk, null veya "")
+        // ingredient boş değilse ekle (boşluk, null veya "")
         if (!ing.isNullOrBlank()) {
             ing to (meas ?: "")
         } else null
@@ -55,6 +56,8 @@ fun MealDetailDto.toDomain(): Meal {
         category = this.strCategory,
         area = this.strArea,
         instructions = this.strInstructions,
+        // DÜZELTME: MealDetail sınıfınızda hata aldığı için, resim parametresini tekrar 'imageUrl' olarak değiştirdik.
+        // Lütfen 'MealDetail' sınıfınızdaki resim parametre adının 'imageUrl' olduğunu KONTROL EDİNİZ.
         imageUrl = this.strMealThumb,
         tags = tagsList,
         youtubeUrl = this.strYoutube,

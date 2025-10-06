@@ -5,6 +5,7 @@ import com.loc.worldcuisine.data.local.SavedMealEntity
 import com.loc.worldcuisine.data.remote.api.CuisineApi
 import com.loc.worldcuisine.data.remote.mapper.toDomain
 import com.loc.worldcuisine.domain.model.Meal
+import com.loc.worldcuisine.domain.model.MealDetail
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -21,7 +22,7 @@ class CuisineRepositoryImpl @Inject constructor(
     }
 
     // Belirli bir yemeğin detayını getiriyoruz (ör: mealId=52772 -> "Teriyaki Chicken")
-    override suspend fun getMealDetail(mealId: String): Meal {
+    override suspend fun getMealDetail(mealId: String): MealDetail {
         val response = api.getMealDetail(mealId)
         return response.meals?.firstOrNull()?.toDomain()
             ?: throw Exception("Meal not found") // null gelirse hata fırlatıyoruz
