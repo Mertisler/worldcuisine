@@ -3,7 +3,9 @@ package com.loc.worldcuisine.domain.repository
 import com.loc.worldcuisine.data.local.SavedMealDao
 import com.loc.worldcuisine.data.local.SavedMealEntity
 import com.loc.worldcuisine.data.remote.api.CuisineApi
+import com.loc.worldcuisine.data.remote.dto.toDomain
 import com.loc.worldcuisine.data.remote.mapper.toDomain
+import com.loc.worldcuisine.domain.model.Category
 import com.loc.worldcuisine.domain.model.Meal
 import com.loc.worldcuisine.domain.model.MealDetail
 import kotlinx.coroutines.flow.Flow
@@ -55,4 +57,18 @@ class CuisineRepositoryImpl @Inject constructor(
     override suspend fun deleteMeal(mealId: String) {
         savedMealDao.deleteMeal(mealId)
     }
+
+    override suspend fun getMealCategories(): List<Category> {
+        val response = api.getMealCategories() // retrofit ile çağırıyoruz
+        return response.categories.map { it.toDomain() }
+    }
+
+
+
+
+    override suspend fun getMealsByCategory(category: String): List<Meal> {
+        val response = api.getMealsByCategory(category)
+        return response.meals?.map { it.toDomain() } ?: emptyList()
+    }
+
 }

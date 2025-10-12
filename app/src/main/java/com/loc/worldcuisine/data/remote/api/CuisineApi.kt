@@ -1,5 +1,6 @@
 package com.loc.worldcuisine.data.remote.api
 
+import com.loc.worldcuisine.data.remote.dto.CategoryResponse
 import com.loc.worldcuisine.data.remote.dto.CuisinesResponseDto
 import com.loc.worldcuisine.data.remote.dto.MealDetailResponseDto
 import com.loc.worldcuisine.data.remote.dto.MealsResponseDto
@@ -26,4 +27,12 @@ interface CuisineApi {
     suspend fun getMealDetail(
         @Query("i") mealId: String
     ): MealDetailResponseDto
+
+    @GET("list.php?c=list")
+    suspend fun getMealCategories(): CategoryResponse
+
+    @GET("filter.php")
+    suspend fun getMealsByCategory(
+        @Query("c") category: String
+    ): MealsResponseDto
 }

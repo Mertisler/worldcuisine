@@ -1,5 +1,6 @@
 package com.loc.worldcuisine.domain.repository
 
+import com.loc.worldcuisine.domain.model.Category
 import com.loc.worldcuisine.domain.model.Meal
 import com.loc.worldcuisine.domain.model.MealDetail
 import kotlinx.coroutines.flow.Flow
@@ -43,4 +44,7 @@ interface CuisineRepository {
      * Kaynak: Local DB (Room)
      */
     suspend fun deleteMeal(mealId: String)
+
+    suspend fun getMealCategories(): List<Category>
+    suspend fun getMealsByCategory(category: String): List<Meal>
 }

@@ -18,19 +18,21 @@ import kotlinx.coroutines.flow.StateFlow
 @Composable
 fun CuisineScreen(
     viewModel: CuisineViewModel = hiltViewModel(),
-    onCuisineSelected: (String) -> Unit // Navigation için callback
+    onCuisineSelected: (String) -> Unit
 ) {
-    val meals by viewModel.meals.collectAsState()
+   //val cuisines by viewModel.cuisines.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
     CuisineScreenContent(
         cuisines = listOf("Turkish", "Italian", "Japanese", "Mexican", "Indian"),
+
         isLoading = isLoading,
         errorMessage = errorMessage,
         onCuisineSelected = onCuisineSelected
     )
 }
+
 
 @Composable
 private fun CuisineScreenContent(
@@ -68,6 +70,7 @@ private fun CuisineScreenContent(
                             .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
+
                         Text(text = cuisine, style = MaterialTheme.typography.bodyLarge)
                     }
                 }
