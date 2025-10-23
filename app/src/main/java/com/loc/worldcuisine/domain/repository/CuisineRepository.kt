@@ -47,4 +47,7 @@ interface CuisineRepository {
 
     suspend fun getMealCategories(): List<Category>
     suspend fun getMealsByCategory(category: String): List<Meal>
+
+    // ülkeye göre yemekleri getir
+    suspend fun getMealsByCountry(country: String): List<Meal>
 }

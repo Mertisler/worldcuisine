@@ -15,17 +15,36 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.loc.worldcuisine.domain.model.Category
 import com.loc.worldcuisine.domain.model.Meal
-
-
 
 @Composable
 fun MealListScreen(
+    country: String,
     viewModel: MealListViewModel = hiltViewModel(),
     onMealSelected: (String) -> Unit
 ) {
-    val state = viewModel.state.value
+    val state by viewModel.state
 
+    LaunchedEffect(country) {
+        viewModel.getMealsByCountry(country)
+    }
+
+    MealListScreenContent(
+        state = state,
+        onMealSelected = onMealSelected,
+//        onCategorySelected = { category ->
+//            viewModel.getMealsByCategory(category)
+//        }
+    )
+}
+
+@Composable
+private fun MealListScreenContent(
+    state: MealListState,
+    onMealSelected: (String) -> Unit,
+   // onCategorySelected: (String) -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -40,60 +59,31 @@ fun MealListScreen(
                     modifier = Modifier.padding(16.dp)
                 )
             }
-            state.categories.isEmpty() -> {
+            state.isLoading -> {
                 CircularProgressIndicator(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(top = 40.dp)
                 )
             }
+            state.meals.isEmpty() -> {
+                Text(
+                    text = "Bu ülkeye ait yemek bulunamadı.",
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            }
             else -> {
-                // Kategori Barı
-                Row(
-                    modifier = Modifier
-                        .horizontalScroll(rememberScrollState())
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    state.categories.forEach { category ->
-                        val isSelected = category.name == state.selectedCategory
-                        Card(
-                            modifier = Modifier
-                                .clickable { viewModel.getMealsByCategory(category.name) },
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (isSelected)
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-                                else
-                                    Color.LightGray
-                            ),
-                            shape = MaterialTheme.shapes.medium
-                        ) {
-                            Text(
-                                text = category.name,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                                color = if (isSelected) Color.White else Color.Black
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Yemek Listesi
                 LazyColumn {
                     items(state.meals.size) { index ->
                         MealItem2(
                             meal = state.meals[index],
-                            onClick = { mealId ->
-                                onMealSelected(mealId)
-                            }
+                            onClick = { mealId -> onMealSelected(mealId) }
                         )
                     }
                 }
             }
         }
+
     }
 }
 
@@ -124,4 +114,51 @@ fun MealItem2(
             )
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MealListScreenPreview() {
+    val fakeState = MealListState(
+        categories = listOf(
+            Category(
+                id = "1",
+                name = "breef",
+                thumbnail = "https://www.themealdb.com/images/category/italian.png",
+                description = "Delicious Italian cuisine"
+            ),
+            Category(
+                id = "2",
+                name = "breakfest",
+                thumbnail = "https://www.themealdb.com/images/category/turkish.png",
+                description = "Famous Turkish dishes"
+            ),
+            Category(
+                id = "3",
+                name = "chicken",
+                thumbnail = "https://www.themealdb.com/images/category/japanese.png",
+                description = "Traditional Japanese meals"
+            )
+        ),
+        meals = listOf(
+            Meal(
+                id = "1",
+                name = "Spaghetti Carbonara",
+                thumbnail = "https://www.themealdb.com/images/media/meals/llcbn01574260722.jpg"
+            ),
+            Meal(
+                id = "2",
+                name = "Adana Kebab",
+                thumbnail = "https://www.themealdb.com/images/media/meals/urypqf1557110459.jpg"
+            )
+        ),
+        selectedCategory = "Italian",
+        error = null
+    )
+
+    MealListScreenContent(
+        state = fakeState,
+        onMealSelected = {},
+       // onCategorySelected = {}
+    )
 }

@@ -71,4 +71,9 @@ class CuisineRepositoryImpl @Inject constructor(
         return response.meals?.map { it.toDomain() } ?: emptyList()
     }
 
+    override suspend fun getMealsByCountry(country: String): List<Meal> {
+        val response = api.getMealsByCountry(country) // CuisineApi'de bu endpoint olmalı
+        return response.meals?.map { it.toDomain() } ?: emptyList()
+    }
+
 }

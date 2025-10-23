@@ -17,9 +17,9 @@ class MealListViewModel @Inject constructor(
     private val _state = mutableStateOf(MealListState())
     val state: State<MealListState> = _state
 
-    init {
-        getCategories()
-    }
+//    init {
+//        getCategories()
+//    }
 
     private fun getCategories() {
         viewModelScope.launch {
@@ -36,17 +36,46 @@ class MealListViewModel @Inject constructor(
         }
     }
 
-    fun getMealsByCategory(category: String) {
+    fun getMealsByCategory(cuisine: String) {
         viewModelScope.launch {
             try {
-                val meals = repository.getMealsByCategory(category)
+                _state.value = _state.value.copy(isLoading = true)
+
+                // 🔹 cuisine parametresine göre veri çek
+                val meals = repository.getMealsByCategory(cuisine)
+
                 _state.value = _state.value.copy(
                     meals = meals,
-                    selectedCategory = category
+                    selectedCategory = cuisine,
+                    isLoading = false,
+                    error = null
+                )
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    error = e.localizedMessage
+                )
+            }
+        }
+    }
+
+    fun getMealsByCountry(country: String) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true)
+
+            try {
+                val meals = repository.getMealsByCountry(country)
+                _state.value = _state.value.copy(
+                    meals = meals,
+                    selectedCategory = null,
+                    error = null
                 )
             } catch (e: Exception) {
                 _state.value = _state.value.copy(error = e.message)
+            } finally {
+                _state.value = _state.value.copy(isLoading = false)
             }
         }
     }
 }
+

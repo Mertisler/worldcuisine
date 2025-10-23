@@ -2,6 +2,7 @@ package com.loc.worldcuisine.presentation.navigation
 
 import android.net.Uri
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NamedNavArgument
@@ -27,6 +28,7 @@ fun AppNavHost(
         startDestination = Routes.CUISINE_SCREEN,
         modifier = modifier
     ) {
+        
         // 🔹 1. Dünya Mutfakları
         composable(Routes.CUISINE_SCREEN) {
             val viewModel: CuisineViewModel = hiltViewModel()
@@ -46,11 +48,13 @@ fun AppNavHost(
             val cuisine = backStackEntry.arguments?.getString("cuisine")?.let { Uri.decode(it) } ?: ""
             val viewModel: MealListViewModel = hiltViewModel()
 
-            // MealListViewModel zaten init'te kategorileri yüklüyor,
-            // buradaki kategori parametresine göre yemekleri getir
-            viewModel.getMealsByCategory(cuisine)
+            // 🔹 Sadece 1 kez çağrılacak şekilde LaunchedEffect ile sarmalıyoruz
+            LaunchedEffect(cuisine) {
+                viewModel.getMealsByCountry(cuisine)
+            }
 
             MealListScreen(
+                country = cuisine,
                 viewModel = viewModel,
                 onMealSelected = { mealId ->
                     navController.navigate("meal_detail_screen/$mealId")
