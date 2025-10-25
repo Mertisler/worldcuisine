@@ -50,4 +50,6 @@ interface CuisineRepository {
 
     // ülkeye göre yemekleri getir
     suspend fun getMealsByCountry(country: String): List<Meal>
+
+    suspend fun getCuisines(): List<String>
 }

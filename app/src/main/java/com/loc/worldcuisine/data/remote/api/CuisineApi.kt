@@ -40,4 +40,9 @@ interface CuisineApi {
     suspend fun getMealsByCountry(
         @Query("a") country: String
     ): MealsResponseDto
+
+//    @GET("list.php")
+//    suspend fun getCuisine(
+//        @Query("a") type: String="list"
+//    ): CuisinesResponseDto
 }

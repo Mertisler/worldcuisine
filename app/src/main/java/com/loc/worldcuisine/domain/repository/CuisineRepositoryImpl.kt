@@ -76,4 +76,9 @@ class CuisineRepositoryImpl @Inject constructor(
         return response.meals?.map { it.toDomain() } ?: emptyList()
     }
 
+    override suspend fun getCuisines(): List<String> {
+        return api.getCuisines().meals?.map { it.toDomain() as String } ?: emptyList()
+    }
+
+
 }

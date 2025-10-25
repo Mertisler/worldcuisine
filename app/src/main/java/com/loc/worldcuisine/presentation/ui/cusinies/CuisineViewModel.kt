@@ -1,6 +1,7 @@
 package com.loc.worldcuisine.presentation.ui.cusinies
 
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.loc.worldcuisine.domain.model.Meal
@@ -8,6 +9,7 @@ import com.loc.worldcuisine.domain.usecase.GetMealsByCuisineUseCase
 import com.loc.worldcuisine.domain.usecase.GetSavedMealsUseCase
 import com.loc.worldcuisine.domain.usecase.SaveMealUseCase
 import com.loc.worldcuisine.domain.usecase.DeleteMealUseCase
+import com.loc.worldcuisine.domain.usecase.GetCuisinesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,11 +18,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CuisineViewModel @Inject constructor(
+    private val getCuisinesUseCase: GetCuisinesUseCase,
     private val getMealsByCuisineUseCase: GetMealsByCuisineUseCase,
     private val getSavedMealsUseCase: GetSavedMealsUseCase,
     private val saveMealUseCase: SaveMealUseCase,
     private val deleteMealUseCase: DeleteMealUseCase
 ) : ViewModel() {
+
+    var cuisines = mutableStateOf<List<String>>(emptyList())
+        private set
 
     private val _meals = MutableStateFlow<List<Meal>>(emptyList())
     val meals: StateFlow<List<Meal>> = _meals
@@ -33,6 +39,24 @@ class CuisineViewModel @Inject constructor(
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
+
+    init {
+        getCuisines()
+    }
+
+    fun getCuisines() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                cuisines.value = getCuisinesUseCase()
+                _errorMessage.value = null
+            } catch (e: Exception) {
+                _errorMessage.value = e.message
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 
     // 🔹 1. API'den belirli bir mutfağa göre yemekleri getir
     fun getMealsByCuisine(cuisine: String) {

@@ -20,12 +20,12 @@ fun CuisineScreen(
     viewModel: CuisineViewModel = hiltViewModel(),
     onCuisineSelected: (String) -> Unit
 ) {
-   //val cuisines by viewModel.cuisines.collectAsState()
+    val cuisines by viewModel.cuisines
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
     CuisineScreenContent(
-        cuisines = listOf("Turkish", "Italian", "Japanese", "Mexican", "Indian"),
+        cuisines = cuisines,
 
         isLoading = isLoading,
         errorMessage = errorMessage,

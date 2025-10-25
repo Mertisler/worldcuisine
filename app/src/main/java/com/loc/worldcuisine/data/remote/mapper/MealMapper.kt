@@ -1,10 +1,14 @@
 package com.loc.worldcuisine.data.remote.mapper
 
+import com.loc.worldcuisine.data.remote.dto.CuisineDto
 import com.loc.worldcuisine.data.remote.dto.MealDetailDto
 import com.loc.worldcuisine.data.remote.dto.MealDto
 import com.loc.worldcuisine.domain.model.Meal
 import com.loc.worldcuisine.domain.model.MealDetail
 
+fun CuisineDto.toDomain(): String? {
+    return strArea
+}
 
 // Basit Meal mapper (liste gösterim için)
 fun MealDto.toDomain(): Meal =
