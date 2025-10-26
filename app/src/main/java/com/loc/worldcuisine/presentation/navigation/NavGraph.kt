@@ -5,18 +5,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NamedNavArgument
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.loc.worldcuisine.presentation.navigation.Routes.MEAL_DETAIL_SCREEN
 import com.loc.worldcuisine.presentation.ui.cusinies.CuisineScreen
-import com.loc.worldcuisine.presentation.ui.cusinies.CuisineViewModel
 import com.loc.worldcuisine.presentation.ui.meallist.MealListScreen
 import com.loc.worldcuisine.presentation.ui.meallist.MealListViewModel
+import com.loc.worldcuisine.presentation.ui.mealDetail.MealDetailScreen // 👈 YENİ İMPORT
 
 @Composable
 fun AppNavHost(
@@ -28,12 +27,11 @@ fun AppNavHost(
         startDestination = Routes.CUISINE_SCREEN,
         modifier = modifier
     ) {
-        
+
         // 🔹 1. Dünya Mutfakları
         composable(Routes.CUISINE_SCREEN) {
-            val viewModel: CuisineViewModel = hiltViewModel()
             CuisineScreen(
-                viewModel = viewModel,
+                // hiltViewModel kullanımı burada implicit yapıldı
                 onCuisineSelected = { cuisine ->
                     navController.navigate("meal_list_screen/${Uri.encode(cuisine)}")
                 }
@@ -48,7 +46,6 @@ fun AppNavHost(
             val cuisine = backStackEntry.arguments?.getString("cuisine")?.let { Uri.decode(it) } ?: ""
             val viewModel: MealListViewModel = hiltViewModel()
 
-            // 🔹 Sadece 1 kez çağrılacak şekilde LaunchedEffect ile sarmalıyoruz
             LaunchedEffect(cuisine) {
                 viewModel.getMealsByCountry(cuisine)
             }
@@ -57,12 +54,26 @@ fun AppNavHost(
                 country = cuisine,
                 viewModel = viewModel,
                 onMealSelected = { mealId ->
-                    navController.navigate("meal_detail_screen/$mealId")
+                    // ✅ GÜNCELLENDİ: Rota adını Routes objesinden dinamik oluşturuyoruz
+                    navController.navigate(MEAL_DETAIL_SCREEN.replace("{mealId}", mealId))
                 }
             )
         }
 
-
+        // 🔹 3. YEMEK DETAY EKRANI (YENİ EKLEME)
+        composable(
+            route = Routes.MEAL_DETAIL_SCREEN, // meal_detail_screen/{mealId}
+            arguments = listOf(navArgument("mealId") { type = NavType.StringType })
+        ) {
+            // MealDetailScreen'e argümanı doğrudan aktarmaya gerek yok,
+            // çünkü ViewModel (SavedStateHandle kullanarak) onu otomatik çeker.
+            MealDetailScreen(
+                // ViewModel Hilt tarafından enjekte edilir
+                onNavigateBack = {
+                    navController.popBackStack() // Geri tuşu işlevi
+                }
+            )
+        }
     }
 }
 
@@ -72,4 +83,3 @@ object Routes {
     const val MEAL_LIST_SCREEN = "meal_list_screen/{cuisine}"
     const val MEAL_DETAIL_SCREEN = "meal_detail_screen/{mealId}"
 }
-

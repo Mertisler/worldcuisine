@@ -4,6 +4,7 @@ data class MealDetail(
     val id: String,
     val name: String,
     val category: String?,
+    val thumbnail: String?,
     val area: String?,
     val instructions: String?,
     val imageUrl: String?,

@@ -60,11 +60,10 @@ fun MealDetailDto.toDomain(): MealDetail {
         category = this.strCategory,
         area = this.strArea,
         instructions = this.strInstructions,
-        // DÜZELTME: MealDetail sınıfınızda hata aldığı için, resim parametresini tekrar 'imageUrl' olarak değiştirdik.
-        // Lütfen 'MealDetail' sınıfınızdaki resim parametre adının 'imageUrl' olduğunu KONTROL EDİNİZ.
         imageUrl = this.strMealThumb,
         tags = tagsList,
         youtubeUrl = this.strYoutube,
-        ingredients = ingPairs
+        ingredients = ingPairs,
+        thumbnail = this.strMealThumb
     )
 }
