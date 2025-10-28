@@ -6,11 +6,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -18,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.loc.worldcuisine.domain.model.MealDetail
+
 
 /**
  * ViewModel'i yöneten ve state'i (durumu) dinleyen ana Composable.
@@ -45,10 +48,12 @@ fun MealDetailScreen(
 @Composable
 private fun MealDetailScreenContent(
     state: MealDetailState,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onSaveMeal: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
+
             TopAppBar(
                 title = {
                     // Yemek yüklendiyse başlığa adını yaz, yüklenmediyse 'Detay' yaz
@@ -60,6 +65,19 @@ private fun MealDetailScreenContent(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Geri Git"
                         )
+                    }
+                },
+                        actions = {
+                    // Sadece yemek yüklendiyse VE
+                    // yemek henüz kayıtlı DEĞİLSE butonu göster
+                    if (state.meal != null && !state.isSaved) {
+                        IconButton(onClick = onSaveMeal) {
+                            Icon(
+                                // Sadece "Ekle" ikonu
+                                imageVector = Icons.Outlined.Add,
+                                contentDescription = "Kaydet"
+                            )
+                        }
                     }
                 }
             )
