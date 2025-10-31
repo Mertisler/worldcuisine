@@ -16,6 +16,7 @@ import com.loc.worldcuisine.presentation.ui.cusinies.CuisineScreen
 import com.loc.worldcuisine.presentation.ui.meallist.MealListScreen
 import com.loc.worldcuisine.presentation.ui.meallist.MealListViewModel
 import com.loc.worldcuisine.presentation.ui.mealDetail.MealDetailScreen // 👈 YENİ İMPORT
+import com.loc.worldcuisine.presentation.ui.savemeal.SavedMealsScreen
 
 @Composable
 fun AppNavHost(
@@ -34,7 +35,11 @@ fun AppNavHost(
                 // hiltViewModel kullanımı burada implicit yapıldı
                 onCuisineSelected = { cuisine ->
                     navController.navigate("meal_list_screen/${Uri.encode(cuisine)}")
+                },
+                onGoToSaveMeal = {
+                    navController.navigate(Routes.SAVE_MEAL_SCREEN)
                 }
+
             )
         }
 
@@ -74,6 +79,19 @@ fun AppNavHost(
                 }
             )
         }
+
+        composable(route = Routes.SAVE_MEAL_SCREEN) {
+            SavedMealsScreen(
+
+                onMealSelected = { mealId ->
+
+                    navController.navigate(MEAL_DETAIL_SCREEN.replace("{mealId}", mealId))
+                },
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
     }
 }
 
@@ -82,4 +100,6 @@ object Routes {
     const val CUISINE_SCREEN = "cuisine_screen"
     const val MEAL_LIST_SCREEN = "meal_list_screen/{cuisine}"
     const val MEAL_DETAIL_SCREEN = "meal_detail_screen/{mealId}"
+    const val SAVE_MEAL_SCREEN = "save_meal_screen"
 }
+
