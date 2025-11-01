@@ -67,15 +67,16 @@ fun AppNavHost(
 
         // 🔹 3. YEMEK DETAY EKRANI (YENİ EKLEME)
         composable(
-            route = Routes.MEAL_DETAIL_SCREEN, // meal_detail_screen/{mealId}
+            route = Routes.MEAL_DETAIL_SCREEN, // "meal_detail_screen/{mealId}"
             arguments = listOf(navArgument("mealId") { type = NavType.StringType })
         ) {
-            // MealDetailScreen'e argümanı doğrudan aktarmaya gerek yok,
-            // çünkü ViewModel (SavedStateHandle kullanarak) onu otomatik çeker.
             MealDetailScreen(
-                // ViewModel Hilt tarafından enjekte edilir
                 onNavigateBack = {
                     navController.popBackStack() // Geri tuşu işlevi
+                },
+                // 👈 YENİ EKLENEN NAVİGASYON İŞLEMİ
+                onNavigateToSavedMeals = {
+                    navController.navigate(Routes.SAVE_MEAL_SCREEN)
                 }
             )
         }

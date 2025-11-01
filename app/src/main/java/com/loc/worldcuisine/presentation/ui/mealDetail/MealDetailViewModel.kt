@@ -1,5 +1,6 @@
 package com.loc.worldcuisine.presentation.ui.mealDetail
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -10,9 +11,11 @@ import com.loc.worldcuisine.domain.usecase.GetMealDetailUseCase
 import com.loc.worldcuisine.domain.usecase.GetSavedMealsUseCase
 import com.loc.worldcuisine.domain.usecase.SaveMealUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -68,21 +71,44 @@ class MealDetailViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    fun onSaveMeal() {
+    /**
+     * YENİ: Bu fonksiyon artık işlem bittiğinde çağrılacak bir
+     * 'onSaveComplete' callback'i alıyor.
+     */
+    fun onSaveMeal(onSaveComplete: () -> Unit) { //  PARAMETRE EKLENDİ
+        Log.d("SaveMealDebug", "onSaveMeal fonksiyonu çağrıldı.")
+
         viewModelScope.launch {
-            val mealDetail = _state.value.meal ?: return@launch
+            val mealDetail = _state.value.meal ?: run {
+                Log.e("SaveMealDebug", "MealDetail null, işlem iptal.")
+                return@launch
+            }
             val isCurrentlySaved = _state.value.isSaved
 
-            // Sadece zaten kayıtlı değilse kaydet
             if (!isCurrentlySaved) {
+                Log.d("SaveMealDebug", "Kayıt işlemi başlıyor...")
                 val mealToSave = Meal(
                     id = mealDetail.id,
                     name = mealDetail.name,
                     thumbnail = mealDetail.thumbnail ?: ""
                 )
+
+                //  'saveMealUseCase' asenkron bir suspend fonksiyonudur.
+                // Kod, bu satırın bitmesini BEKLER.
                 saveMealUseCase(mealToSave)
+
+                Log.d("SaveMealDebug", "Kayıt tamamlandı.")
+
+            } else {
+                Log.d("SaveMealDebug", "Yemek zaten kayıtlıydı.")
             }
-            // Kayıtlıysa hiçbir şey yapma.
+
+            //  İŞLEM BİTTİKTEN SONRA (ister kaydedilmiş olsun, ister olmasın)
+            // Navigasyonun UI thread'de yapılması için Main context'e geç
+            withContext(Dispatchers.Main) {
+                onSaveComplete()
+            }
         }
     }
+
 }

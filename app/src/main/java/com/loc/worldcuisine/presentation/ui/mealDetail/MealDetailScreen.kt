@@ -28,7 +28,8 @@ import com.loc.worldcuisine.domain.model.MealDetail
 @Composable
 fun MealDetailScreen(
     viewModel: MealDetailViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit // Geri gitmek için navigasyon fonksiyonu
+    onNavigateBack: () -> Unit ,// Geri gitmek için navigasyon fonksiyonu
+    onNavigateToSavedMeals: () -> Unit = {}
 ) {
     // ViewModel'den gelen 'state'i dinle. 'by' kullanmak,
     // state değiştiğinde ekranın otomatik güncellenmesini sağlar.
@@ -37,7 +38,19 @@ fun MealDetailScreen(
     // UI'ı çizen alt Composable'ı çağır
     MealDetailScreenContent(
         state = state,
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
+
+        // 2. DEĞİŞİKLİK: 'onSaveMeal' olayını burada tanımla.
+        // Bu lambda, HEM kaydetme işlemini HEM DE navigasyonu tetikler.
+        onSaveMeal = {
+            // ViewModel'e kaydetmesini SÖYLE
+            // ve işlem BİTİNCE ne yapacağını (navigasyon) callback olarak VER.
+            viewModel.onSaveMeal(
+                onSaveComplete = {
+                    onNavigateToSavedMeals() // Navigasyon artık burada, callback içinde.
+                }
+            )
+        }
     )
 }
 
@@ -49,31 +62,19 @@ fun MealDetailScreen(
 private fun MealDetailScreenContent(
     state: MealDetailState,
     onNavigateBack: () -> Unit,
-    onSaveMeal: () -> Unit = {}
+    onSaveMeal: () -> Unit // 3. DEĞİŞİKLİK: Varsayılan değeri (= {}) kaldır.
 ) {
     Scaffold(
         topBar = {
-
             TopAppBar(
-                title = {
-                    // Yemek yüklendiyse başlığa adını yaz, yüklenmediyse 'Detay' yaz
-                    Text(text = state.meal?.name ?: "Yemek Detayı")
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Geri Git"
-                        )
-                    }
-                },
-                        actions = {
-                    // Sadece yemek yüklendiyse VE
-                    // yemek henüz kayıtlı DEĞİLSE butonu göster
+                title = { /* ... (Başlık) ... */ },
+                navigationIcon = { /* ... (Geri ikonu) ... */ },
+                actions = {
                     if (state.meal != null && !state.isSaved) {
+                        // 4. DEĞİŞİKLİK: 'onClick' artık 'MealDetailScreen'den
+                        // gelen birleşik (kaydet + navigasyon) lambda'yı çağırır.
                         IconButton(onClick = onSaveMeal) {
                             Icon(
-                                // Sadece "Ekle" ikonu
                                 imageVector = Icons.Outlined.Add,
                                 contentDescription = "Kaydet"
                             )
@@ -222,7 +223,8 @@ fun MealDetailScreenPreview() {
 
     MealDetailScreenContent(
         state = fakeState,
-        onNavigateBack = {} // Preview'da geri gitme işlemi boş
+        onNavigateBack = {}, // Preview'da geri gitme işlemi boş
+        onSaveMeal = {} // Preview'da kaydetme işlemi boş
     )
 }
 
@@ -237,7 +239,8 @@ fun MealDetailScreenErrorPreview() {
 
     MealDetailScreenContent(
         state = fakeState,
-        onNavigateBack = {}
+        onNavigateBack = {},
+        onSaveMeal = {}
     )
 }
 
@@ -252,6 +255,7 @@ fun MealDetailScreenLoadingPreview() {
 
     MealDetailScreenContent(
         state = fakeState,
-        onNavigateBack = {}
+        onNavigateBack = {},
+        onSaveMeal = {}
     )
 }

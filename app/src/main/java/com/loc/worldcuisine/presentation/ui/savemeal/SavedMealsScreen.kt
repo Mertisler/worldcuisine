@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete // 👈 Silme ikonu
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -55,7 +55,6 @@ fun SavedMealsScreen(
                             SavedMealItem(
                                 meal = meal,
                                 onClick = { onMealSelected(meal.id) },
-                                // 👈 SİLME BUTONU VE İŞLEVİ BURADA
                                 onDeleteClick = {
                                     viewModel.deleteSavedMeal(meal.id)
                                 }
@@ -68,7 +67,6 @@ fun SavedMealsScreen(
     }
 }
 
-// 👈 Silme butonunu içeren UI bileşeni
 @Composable
 private fun SavedMealItem(
     meal: Meal,
@@ -91,7 +89,6 @@ private fun SavedMealItem(
                 text = meal.name,
                 modifier = Modifier.weight(1f).padding(8.dp)
             )
-            // 👈 SİLME BUTONU
             IconButton(onClick = onDeleteClick) {
                 Icon(Icons.Default.Delete, "Sil", tint = MaterialTheme.colorScheme.error)
             }

@@ -1,5 +1,6 @@
 package com.loc.worldcuisine.presentation.ui.saved
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -24,18 +25,34 @@ class SavedMealsViewModel @Inject constructor(
     val state: State<SavedMealsState> = _state
 
     init {
+        Log.d("SavedMealsDebug", "SavedMealsViewModel başlatıldı (init).") //  LOG 1
         observeSavedMeals()
     }
 
     private fun observeSavedMeals() {
-        _state.value= SavedMealsState(isLoading = true)
+        Log.d("SavedMealsDebug", "observeSavedMeals() çağrıldı. Flow dinleniyor...") //  LOG 2
+        _state.value = SavedMealsState(isLoading = true)
+
         getSavedMealsUseCase()
-            .onEach {meals ->
-                _state.value = SavedMealsState(isLoading = false, meals = meals)
-            }.catch {
-                _state.value = SavedMealsState(isLoading = false, error = it.message)
-            }.launchIn(viewModelScope)
+            .onEach { mealsList ->
+                Log.d("SavedMealsDebug", "Flow'dan YENİ VERİ GELDİ. Liste boyutu: ${mealsList.size}")
+
+                if (mealsList.isNotEmpty()) {
+                    Log.d("SavedMealsDebug", "Gelen ilk yemeğin adı: ${mealsList.first().name}")
+                    Log.d("SavedMealsDebug", "Gelen son yemek adı: ${mealsList.last().name}")
+                }
+
+                _state.value = SavedMealsState(
+                    isLoading = false,
+                    savedMeals = mealsList
+                )
             }
+            .catch { e ->
+                Log.e("SavedMealsDebug", "Flow dinlerken hata: ${e.message}") //  LOG 5
+                _state.value = SavedMealsState(isLoading = false, error = e.message)
+            }
+            .launchIn(viewModelScope)
+    }
     fun deleteSavedMeal(mealId: String) {
         viewModelScope.launch {
             deleteMealUseCase(mealId)
