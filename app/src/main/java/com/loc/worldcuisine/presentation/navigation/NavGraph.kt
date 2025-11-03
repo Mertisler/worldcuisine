@@ -15,7 +15,7 @@ import com.loc.worldcuisine.presentation.navigation.Routes.MEAL_DETAIL_SCREEN
 import com.loc.worldcuisine.presentation.ui.cusinies.CuisineScreen
 import com.loc.worldcuisine.presentation.ui.meallist.MealListScreen
 import com.loc.worldcuisine.presentation.ui.meallist.MealListViewModel
-import com.loc.worldcuisine.presentation.ui.mealDetail.MealDetailScreen // 👈 YENİ İMPORT
+import com.loc.worldcuisine.presentation.ui.mealDetail.MealDetailScreen
 import com.loc.worldcuisine.presentation.ui.savemeal.SavedMealsScreen
 
 @Composable
