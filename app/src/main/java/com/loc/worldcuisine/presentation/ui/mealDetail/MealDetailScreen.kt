@@ -1,18 +1,25 @@
 package com.loc.worldcuisine.presentation.ui.mealDetail
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -20,100 +27,93 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.loc.worldcuisine.domain.model.MealDetail
+import kotlinx.coroutines.launch
 
-
-/**
- * ViewModel'i yöneten ve state'i (durumu) dinleyen ana Composable.
- */
 @Composable
 fun MealDetailScreen(
     viewModel: MealDetailViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit ,// Geri gitmek için navigasyon fonksiyonu
+    onNavigateBack: () -> Unit,
     onNavigateToSavedMeals: () -> Unit = {}
 ) {
-    // ViewModel'den gelen 'state'i dinle. 'by' kullanmak,
-    // state değiştiğinde ekranın otomatik güncellenmesini sağlar.
     val state by viewModel.state
 
-    // UI'ı çizen alt Composable'ı çağır
     MealDetailScreenContent(
         state = state,
         onNavigateBack = onNavigateBack,
-
-        // 2. DEĞİŞİKLİK: 'onSaveMeal' olayını burada tanımla.
-        // Bu lambda, HEM kaydetme işlemini HEM DE navigasyonu tetikler.
         onSaveMeal = {
-            // ViewModel'e kaydetmesini SÖYLE
-            // ve işlem BİTİNCE ne yapacağını (navigasyon) callback olarak VER.
             viewModel.onSaveMeal(
-                onSaveComplete = {
-                    onNavigateToSavedMeals() // Navigasyon artık burada, callback içinde.
-                }
+                onSaveComplete = { onNavigateToSavedMeals() }
             )
         }
     )
 }
 
-/**
- * Gerçek UI mantığını (when bloğu) içeren Composable.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MealDetailScreenContent(
     state: MealDetailState,
     onNavigateBack: () -> Unit,
-    onSaveMeal: () -> Unit // 3. DEĞİŞİKLİK: Varsayılan değeri (= {}) kaldır.
+    onSaveMeal: () -> Unit
 ) {
+    // Gradient arka plan
+    val gradient = Brush.verticalGradient(
+        colors = listOf(Color(0xFF6A11CB), Color(0xFF2575FC))
+    )
+
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
-                title = { /* ... (Başlık) ... */ },
-                navigationIcon = { /* ... (Geri ikonu) ... */ },
+                title = {
+                    Text(
+                        text = state.meal?.name ?: "Yemek Detayı",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "Geri Dön",
+                            tint = Color.White
+                        )
+                    }
+                },
                 actions = {
                     if (state.meal != null && !state.isSaved) {
-                        // 4. DEĞİŞİKLİK: 'onClick' artık 'MealDetailScreen'den
-                        // gelen birleşik (kaydet + navigasyon) lambda'yı çağırır.
-                        IconButton(onClick = onSaveMeal) {
-                            Icon(
-                                imageVector = Icons.Outlined.Add,
-                                contentDescription = "Kaydet"
-                            )
-                        }
+                        AnimatedSaveButton(onSaveMeal)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent
+                )
             )
         }
     ) { paddingValues ->
-
-        // Box, 'when' durumlarına göre içeriği ortalamak veya doldurmak için kullanışlıdır
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(gradient)
                 .padding(paddingValues)
-                .padding(16.dp),
-            contentAlignment = Alignment.Center // Hata ve Yükleniyor durumları için
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            contentAlignment = Alignment.Center
         ) {
             when {
-                // 1. Durum: Yükleniyor
                 state.isLoading -> {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = Color.White)
                 }
 
-                // 2. Durum: Hata oluştu
                 state.error != null -> {
                     Text(
-                        text = "Hata: ${state.error}",
-                        color = MaterialTheme.colorScheme.error
+                        text = "🚨 Hata: ${state.error}",
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
 
-                // 3. Durum: Başarılı (Yemek detayı geldi)
                 state.meal != null -> {
-                    // İçerik artık ortalanmayacağı için Box'ın hizalamasını geçersiz kıl
-                    MealDetailContent(
-                        meal = state.meal,
-                        modifier = Modifier.align(Alignment.TopCenter)
-                    )
+                    MealDetailContent(meal = state.meal)
                 }
             }
         }
@@ -121,135 +121,148 @@ private fun MealDetailScreenContent(
 }
 
 /**
- * Yemek detaylarını (Resim, İsim, Tarif) gösteren Composable.
+ * Z kuşağı tarzı, modern ve enerjik içerik alanı
  */
 @Composable
-private fun MealDetailContent(
-    meal: MealDetail,
-    modifier: Modifier = Modifier
-) {
-    // Tarif uzun olabileceği için kaydırılabilir bir Column kullanıyoruz
+private fun MealDetailContent(meal: MealDetail) {
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()), // Kaydırma özelliği ekle
+            .padding(bottom = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Yemek Resmi
+        // 🍝 Yemek Görseli
         AsyncImage(
             model = meal.thumbnail,
             contentDescription = meal.name,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(250.dp),
-            contentScale = ContentScale.Crop // Resmi alana sığdır
+                .height(280.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .padding(top = 8.dp),
+            contentScale = ContentScale.Crop
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Yemek Adı
+        // 🍽️ Sabit Bilgiler (scroll olmaz)
         Text(
             text = meal.name,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.fillMaxWidth() // Metni sola yasla (Column'un hizalamasını geçersiz kıl)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Mutfak / Kategori Bilgisi
-        Text(
-            text = "${meal.area} Mutfağı • ${meal.category} Kategorisi",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Tarif Başlığı
-        Text(
-            text = "Hazırlanışı",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Tarif (Instructions)
-        meal.instructions?.let {
-            Text(
-                text = it,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.fillMaxWidth()
+            style = MaterialTheme.typography.headlineSmall.copy(
+                fontWeight = FontWeight.ExtraBold,
+                color = Color.White
             )
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Text(
+            text = "${meal.area} Mutfağı • ${meal.category}",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = Color.White.copy(alpha = 0.8f)
+            )
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // 🧾 Scrollable Tarif Alanı
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f) // scroll alanını büyüt
+                .clip(RoundedCornerShape(24.dp))
+                .background(Color.White.copy(alpha = 0.08f)),
+            tonalElevation = 2.dp,
+            color = Color.White.copy(alpha = 0.1f)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Text(
+                    text = "👨‍🍳 Hazırlanışı",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = meal.instructions ?: "",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = Color.White,
+                        lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.4f
+                    )
+                )
+            }
         }
     }
 }
 
 
-// --- ÖNİZLEME (PREVIEW) ---
+/**
+ * Modern, animasyonlu "Kaydet" butonu
+ */
+@Composable
+private fun AnimatedSaveButton(onSave: () -> Unit) {
+    var isClicked by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope() // ✅ Compose scope
+    val scale by animateFloatAsState(
+        targetValue = if (isClicked) 1.3f else 1f,
+        label = "scaleAnim"
+    )
+
+    IconButton(
+        onClick = {
+            isClicked = true
+            onSave()
+            scope.launch {
+                kotlinx.coroutines.delay(250)
+                isClicked = false
+            }
+        },
+        modifier = Modifier
+            .size(48.dp)
+            .graphicsLayer(scaleX = scale, scaleY = scale)
+            .background(
+                brush = Brush.linearGradient(
+                    colors = listOf(Color(0xFFEE0979), Color(0xFFFF6A00))
+                ),
+                shape = CircleShape
+            )
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.FavoriteBorder,
+            contentDescription = "Kaydet",
+            tint = Color.White
+        )
+    }
+}
 
 
-
+// --- ÖNİZLEMELER ---
 @Preview(showBackground = true)
 @Composable
 fun MealDetailScreenPreview() {
-    // Sahte bir MealDetail nesnesi oluştur
     val fakeMeal = MealDetail(
         id = "52772",
         name = "Spicy Arrabiata Penne",
         thumbnail = "https://www.themealdb.com/images/media/meals/ustsqw1468234440.jpg",
-        instructions = "Penne makarnasını paketteki talimatlara göre haşlayın. Ayrı bir tavada zeytinyağını ısıtın, doğranmış sarımsak ve pul biberi ekleyin. Sarımsaklar pembeleşince doğranmış domatesleri (veya domates püresini) ekleyin. Tuz ve karabiberle tatlandırın. Sos koyulaşana kadar pişirin. Makarnayı süzüp sosla karıştırın. Taze fesleğen yaprakları ile servis yapın.",
+        instructions = "Penne makarnasını haşlayın. Sosu hazırlayın, karıştırın ve afiyetle yiyin 😋",
         area = "Italian",
         category = "Pasta",
-        imageUrl ="cvvb",
-
-        tags = listOf("Pasta", "Vegetarian"), // Varsayılan veya sahte değerler
-        youtubeUrl = "https://www.youtube.com/watch?v=...", // Nullable olduğu için boş string de olabilir.
-        ingredients = listOf(
-            Pair("Penne", "250g"),
-            Pair("Domates", "400g")
-        )
+        imageUrl = "",
+        tags = listOf("Pasta", "Vegetarian"),
+        youtubeUrl = "",
+        ingredients = listOf("Penne" to "250g", "Domates" to "400g")
     )
 
-    // Başarılı durumu (içerik dolu) test et
     val fakeState = MealDetailState(
         meal = fakeMeal,
         isLoading = false,
-        error = null
-    )
-
-    MealDetailScreenContent(
-        state = fakeState,
-        onNavigateBack = {}, // Preview'da geri gitme işlemi boş
-        onSaveMeal = {} // Preview'da kaydetme işlemi boş
-    )
-}
-
-@Preview(showBackground = true, name = "Hata Durumu")
-@Composable
-fun MealDetailScreenErrorPreview() {
-    val fakeState = MealDetailState(
-        meal = null,
-        isLoading = false,
-        error = "API'den veri çekilemedi. Bağlantı hatası."
-    )
-
-    MealDetailScreenContent(
-        state = fakeState,
-        onNavigateBack = {},
-        onSaveMeal = {}
-    )
-}
-
-@Preview(showBackground = true, name = "Yükleniyor Durumu")
-@Composable
-fun MealDetailScreenLoadingPreview() {
-    val fakeState = MealDetailState(
-        meal = null,
-        isLoading = true,
         error = null
     )
 

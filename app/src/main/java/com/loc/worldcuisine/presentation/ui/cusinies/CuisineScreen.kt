@@ -68,7 +68,7 @@ private fun CuisineScreenContent(
         modifier = Modifier
             .fillMaxSize()
             .background(gradientBackground)
-            .padding(16.dp)
+            .padding(16.dp,48.dp)
     ) {
         Spacer(modifier=Modifier.height(16.dp))
         // Başlık
@@ -80,7 +80,7 @@ private fun CuisineScreenContent(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 20.dp),
+                .padding(bottom = 30.dp,top=5.dp),
             textAlign = TextAlign.Center
         )
 
@@ -116,7 +116,7 @@ private fun CuisineScreenContent(
                     )
 
                     LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = 140.dp),
+                        columns = GridCells.Adaptive(minSize = 110.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f),
@@ -270,10 +270,11 @@ fun GradientButton(
                             MaterialTheme.colorScheme.secondary
                         )
                     ),
-                    shape = CircleShape
+                    shape = CircleShape,
+
                 )
                 .fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = icon, contentDescription = null,
