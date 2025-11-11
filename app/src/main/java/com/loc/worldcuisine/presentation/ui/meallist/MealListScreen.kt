@@ -1,16 +1,24 @@
 package com.loc.worldcuisine.presentation.ui.meallist
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -32,50 +40,57 @@ fun MealListScreen(
 
     MealListScreenContent(
         state = state,
-        onMealSelected = onMealSelected,
-//        onCategorySelected = { category ->
-//            viewModel.getMealsByCategory(category)
-//        }
+        onMealSelected = onMealSelected
     )
 }
 
 @Composable
 private fun MealListScreenContent(
     state: MealListState,
-    onMealSelected: (String) -> Unit,
-   // onCategorySelected: (String) -> Unit
+    onMealSelected: (String) -> Unit
 ) {
-    Column(
+    val gradientBackground = Brush.verticalGradient(
+        listOf(Color(0xFF8E2DE2), Color(0xFF4A00E0)) // mor tonlu gradient
+    )
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
-            .padding(8.dp)
+            .background(gradientBackground)
+            .padding(12.dp)
     ) {
         when {
             state.error != null -> {
                 Text(
-                    text = "Hata: ${state.error}",
-                    color = Color.Red,
-                    modifier = Modifier.padding(16.dp)
+                    text = "⚠️ ${state.error}",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
+
             state.isLoading -> {
                 CircularProgressIndicator(
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(top = 40.dp)
+                    color = Color.White,
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
+
             state.meals.isEmpty() -> {
                 Text(
-                    text = "Bu ülkeye ait yemek bulunamadı.",
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                    text = "Bu ülkeye ait yemek bulunamadı 🍽️",
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
+
             else -> {
-                LazyColumn {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     items(state.meals.size) { index ->
-                        MealItem2(
+                        AnimatedMealCard(
                             meal = state.meals[index],
                             onClick = { mealId -> onMealSelected(mealId) }
                         )
@@ -83,38 +98,67 @@ private fun MealListScreenContent(
                 }
             }
         }
-
     }
 }
 
 @Composable
-fun MealItem2(
+fun AnimatedMealCard(
     meal: Meal,
     onClick: (String) -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (isPressed) 0.97f else 1f, label = "")
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
-            .clickable { onClick(meal.id) },
-        elevation = CardDefaults.cardElevation(4.dp)
+            .scale(scale)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null, // Ripple’ı kaldırmak istersen null bırak
+                onClick = { onClick(meal.id) }
+            )
+            .padding(horizontal = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFFDF7FF)
+        ),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             AsyncImage(
                 model = meal.thumbnail,
                 contentDescription = meal.name,
                 modifier = Modifier
-                    .size(100.dp)
-                    .padding(8.dp)
+                    .size(90.dp)
+                    .background(Color.LightGray, RoundedCornerShape(16.dp))
             )
-            Text(
-                text = meal.name,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(8.dp)
-            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = meal.name,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF4A148C)
+                    )
+                )
+                Text(
+                    text = "Tap to explore ✨",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = Color.Gray
+                    )
+                )
+            }
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
